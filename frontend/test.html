@@ -6,20 +6,11 @@
     <title>Neural Network Email Classifier</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@heroicons/react/24/outline/index.js"></script>
     <style>
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
         .loading-spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #3b82f6;
             border-radius: 50%;
             width: 20px;
             height: 20px;
@@ -41,58 +32,68 @@
         }
     </style>
 </head>
-<body class="gradient-bg min-h-screen">
+<body class="bg-white min-h-screen">
     <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-white mb-2">🧠 Neural Network Email Classifier</h1>
-            <p class="text-white/80 text-lg">Train and test multi-layer perceptron models for spam detection</p>
+            <h1 class="text-4xl font-bold text-gray-800 mb-2 flex items-center justify-center">
+                <svg class="w-8 h-8 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                Neural Network Email Classifier
+            </h1>
+            <p class="text-gray-600 text-lg">Train and test multi-layer perceptron models for spam detection</p>
         </div>
 
         <!-- Navigation Tabs -->
         <div class="flex justify-center mb-8">
-            <div class="glass-effect rounded-lg p-1">
-                <button id="trainTab" class="tab-button active px-6 py-2 rounded-md font-medium transition-all duration-300">
-                    🚀 Train Model
+            <div class="bg-white shadow-md rounded-lg p-1">
+                <button id="trainTab" class="tab-button active px-6 py-2 rounded-md font-medium transition-all duration-300 text-gray-800 bg-gray-100">
+                    <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Train Model
                 </button>
-                <button id="predictTab" class="tab-button px-6 py-2 rounded-md font-medium transition-all duration-300">
-                    🔍 Predict
+                <button id="predictTab" class="tab-button px-6 py-2 rounded-md font-medium transition-all duration-300 text-gray-600">
+                    <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    Predict
                 </button>
-                <button id="metricsTab" class="tab-button px-6 py-2 rounded-md font-medium transition-all duration-300">
-                    📊 Metrics
+                <button id="metricsTab" class="tab-button px-6 py-2 rounded-md font-medium transition-all duration-300 text-gray-600">
+                    <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Metrics
                 </button>
             </div>
         </div>
 
         <!-- Training Panel -->
         <div id="trainPanel" class="panel active">
-            <div class="glass-effect rounded-xl p-8 mb-6">
-                <h2 class="text-2xl font-bold text-white mb-6">🎯 Configure Neural Network</h2>
+            <div class="bg-white shadow-md rounded-xl p-8 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    Configure Neural Network
+                </h2>
                 
                 <form id="trainingForm" class="space-y-6">
                     <!-- Hidden Layers Configuration -->
                     <div>
-                        <label class="block text-white font-medium mb-3">Hidden Layer Architecture</label>
+                        <label class="block text-gray-700 font-medium mb-3">Hidden Layer Architecture</label>
                         <div id="hiddenLayersContainer" class="space-y-3">
                             <div class="hidden-layer-input flex items-center space-x-3">
-                                <span class="text-white/80 w-16">Layer 1:</span>
-                                <input type="number" class="layer-size-input bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white placeholder-white/50 flex-1" 
+                                <span class="text-gray-600 w-16">Layer 1:</span>
+                                <input type="number" class="layer-size-input border border-gray-300 rounded-lg px-4 py-2 text-gray-800 placeholder-gray-400 flex-1" 
                                        placeholder="Number of neurons" value="10" min="1" max="1000">
-                                <button type="button" class="remove-layer-btn text-red-400 hover:text-red-300 px-3 py-2 rounded-lg transition-colors duration-200" style="display: none;">
-                                    ❌
+                                <button type="button" class="remove-layer-btn text-red-500 hover:text-red-600 px-3 py-2 rounded-lg transition-colors duration-200" style="display: none;">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
                             </div>
                         </div>
-                        <button type="button" id="addLayerBtn" class="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
-                            ➕ Add Layer
+                        <button type="button" id="addLayerBtn" class="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Add Layer
                         </button>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Activation Function -->
                         <div>
-                            <label class="block text-white font-medium mb-2">Activation Function</label>
-                            <select id="activationFunction" class="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white">
+                            <label class="block text-gray-700 font-medium mb-2">Activation Function</label>
+                            <select id="activationFunction" class="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-800">
                                 <option value="RELU">ReLU</option>
                                 <option value="SIGMOID">Sigmoid</option>
                                 <option value="TANH">Tanh</option>
@@ -102,28 +103,32 @@
 
                         <!-- Learning Rate -->
                         <div>
-                            <label class="block text-white font-medium mb-2">Learning Rate</label>
+                            <label class="block text-gray-700 font-medium mb-2">Learning Rate</label>
                             <input type="number" id="learningRate" step="0.001" value="0.01" min="0.001" max="1"
-                                   class="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white placeholder-white/50">
+                                   class="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-800 placeholder-gray-400">
                         </div>
 
                         <!-- Epochs -->
                         <div>
-                            <label class="block text-white font-medium mb-2">Training Epochs</label>
+                            <label class="block text-gray-700 font-medium mb-2">Training Epochs</label>
                             <input type="number" id="epochs" value="100" min="1" max="10000"
-                                   class="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white placeholder-white/50">
+                                   class="w-full border border-gray-300 rounded-lg px-4 py-2 text-gray-800 placeholder-gray-400">
                         </div>
                     </div>
 
-                    <button type="submit" id="trainBtn" class="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
-                        🚀 Start Training
+                    <button type="submit" id="trainBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Start Training
                     </button>
                 </form>
             </div>
 
             <!-- Training Results -->
-            <div id="trainingResults" class="glass-effect rounded-xl p-8 hidden">
-                <h3 class="text-xl font-bold text-white mb-4">📈 Training Results</h3>
+            <div id="trainingResults" class="bg-white shadow-md rounded-xl p-8 hidden">
+                <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Training Results
+                </h3>
                 <div id="trainingStatus" class="mb-4"></div>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div id="metricsDisplay"></div>
@@ -136,27 +141,37 @@
 
         <!-- Prediction Panel -->
         <div id="predictPanel" class="panel hidden">
-            <div class="glass-effect rounded-xl p-8">
-                <h2 class="text-2xl font-bold text-white mb-6">🔮 Email Classification</h2>
+            <div class="bg-white shadow-md rounded-xl p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    Email Classification
+                </h2>
                 
                 <form id="predictionForm" class="space-y-6">
                     <div>
-                        <label class="block text-white font-medium mb-3">Email Features (Comma-separated values)</label>
+                        <label class="block text-gray-700 font-medium mb-3">Email Features (Comma-separated values)</label>
                         <textarea id="featuresInput" rows="4" 
-                                  class="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50"
+                                  class="w-full border border-gray-300 rounded-lg px-4 py-3 text-gray-800 placeholder-gray-400"
                                   placeholder="Enter feature values separated by commas, e.g., 0.5, 1.2, 0.0, 2.1, ..."></textarea>
-                        <p class="text-white/60 text-sm mt-2">💡 Tip: Enter numerical feature values that represent email characteristics</p>
+                        <p class="text-gray-500 text-sm mt-2 flex items-center">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Tip: Enter numerical feature values that represent email characteristics
+                        </p>
                     </div>
 
-                    <button type="submit" id="predictBtn" class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
-                        🔍 Classify Email
+                    <button type="submit" id="predictBtn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Classify Email
                     </button>
                 </form>
 
                 <!-- Prediction Result -->
                 <div id="predictionResult" class="mt-6 hidden">
-                    <div class="glass-effect rounded-lg p-6">
-                        <h3 class="text-xl font-bold text-white mb-4">🎯 Classification Result</h3>
+                    <div class="bg-white shadow-md rounded-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Classification Result
+                        </h3>
                         <div id="predictionDisplay"></div>
                     </div>
                 </div>
@@ -165,43 +180,51 @@
 
         <!-- Metrics Panel -->
         <div id="metricsPanel" class="panel hidden">
-            <div class="glass-effect rounded-xl p-8">
-                <h2 class="text-2xl font-bold text-white mb-6">📊 Model Performance</h2>
+            <div class="bg-white shadow-md rounded-xl p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Model Performance
+                </h2>
                 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <!-- Current Model Info -->
-                    <div class="glass-effect rounded-lg p-6">
-                        <h3 class="text-lg font-bold text-white mb-4">🧠 Current Model</h3>
+                    <div class="bg-white shadow-md rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                            Current Model
+                        </h3>
                         <div id="modelInfoDisplay">
-                            <p class="text-white/60">No model trained yet</p>
+                            <p class="text-gray-500">No model trained yet</p>
                         </div>
-                        <button id="refreshModelInfo" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
-                            🔄 Refresh Info
+                        <button id="refreshModelInfo" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Refresh Info
                         </button>
                     </div>
 
                     <!-- Last Training Metrics -->
-                    <div class="glass-effect rounded-lg p-6">
-                        <h3 class="text-lg font-bold text-white mb-4">📈 Last Training</h3>
+                    <div class="bg-white shadow-md rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                            Last Training
+                        </h3>
                         <div id="lastMetricsDisplay">
-                            <p class="text-white/60">No training completed yet</p>
+                            <p class="text-gray-500">No training completed yet</p>
                         </div>
-                        <button id="refreshMetrics" class="mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
-                            🔄 Refresh Metrics
+                        <button id="refreshMetrics" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Refresh Metrics
                         </button>
                     </div>
                 </div>
-
-                <!-- Available Functions -->
-                
             </div>
         </div>
 
         <!-- Loading Overlay -->
-        <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div class="glass-effect rounded-lg p-8 text-center">
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-gray-500/50 flex items-center justify-center z-50">
+            <div class="bg-white shadow-md rounded-lg p-8 text-center">
                 <div class="loading-spinner mx-auto mb-4"></div>
-                <p class="text-white text-lg">Processing...</p>
+                <p class="text-gray-800 text-lg">Processing...</p>
             </div>
         </div>
     </div>
@@ -218,8 +241,8 @@
             button.addEventListener('click', () => {
                 // Remove active class from all tabs and panels
                 document.querySelectorAll('.tab-button').forEach(btn => {
-                    btn.classList.remove('active', 'bg-white/20', 'text-white');
-                    btn.classList.add('text-white/70');
+                    btn.classList.remove('active', 'bg-gray-100', 'text-gray-800');
+                    btn.classList.add('text-gray-600');
                 });
                 document.querySelectorAll('.panel').forEach(panel => {
                     panel.classList.add('hidden');
@@ -227,8 +250,8 @@
                 });
                 
                 // Add active class to clicked tab
-                button.classList.add('active', 'bg-white/20', 'text-white');
-                button.classList.remove('text-white/70');
+                button.classList.add('active', 'bg-gray-100', 'text-gray-800');
+                button.classList.remove('text-gray-600');
                 
                 // Show corresponding panel
                 const panelId = button.id.replace('Tab', 'Panel');
@@ -239,9 +262,9 @@
         });
         
         // Set initial active state
-        document.getElementById('trainTab').classList.add('bg-white/20', 'text-white');
+        document.getElementById('trainTab').classList.add('bg-gray-100', 'text-gray-800');
         document.querySelectorAll('.tab-button:not(#trainTab)').forEach(btn => {
-            btn.classList.add('text-white/70');
+            btn.classList.add('text-gray-600');
         });
 
         // Hidden Layers Management
@@ -253,11 +276,11 @@
             const newLayer = document.createElement('div');
             newLayer.className = 'hidden-layer-input flex items-center space-x-3';
             newLayer.innerHTML = `
-                <span class="text-white/80 w-16">Layer ${layerCount}:</span>
-                <input type="number" class="layer-size-input bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white placeholder-white/50 flex-1" 
+                <span class="text-gray-600 w-16">Layer ${layerCount}:</span>
+                <input type="number" class="layer-size-input border border-gray-300 rounded-lg px-4 py-2 text-gray-800 placeholder-gray-400 flex-1" 
                        placeholder="Number of neurons" value="10" min="1" max="1000">
-                <button type="button" class="remove-layer-btn text-red-400 hover:text-red-300 px-3 py-2 rounded-lg transition-colors duration-200">
-                    ❌
+                <button type="button" class="remove-layer-btn text-red-500 hover:text-red-600 px-3 py-2 rounded-lg transition-colors duration-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             `;
             container.appendChild(newLayer);
@@ -391,27 +414,10 @@
                     const result = await response.json();
                     displayLastMetrics(result);
                 } else {
-                    document.getElementById('lastMetricsDisplay').innerHTML = '<p class="text-white/60">No training metrics available</p>';
+                    document.getElementById('lastMetricsDisplay').innerHTML = '<p class="text-gray-500">No training metrics available</p>';
                 }
             } catch (error) {
                 showAlert('Failed to fetch metrics: ' + error.message, 'error');
-            }
-        });
-
-        document.getElementById('getActivationFunctions').addEventListener('click', async () => {
-            try {
-                const response = await fetch(`${API_BASE}/activation-functions`);
-                const result = await response.json();
-                document.getElementById('functionsResult').innerHTML = `
-                    <div class="glass-effect rounded-lg p-4 mt-4">
-                        <h4 class="text-white font-bold mb-2">Available Activation Functions:</h4>
-                        <div class="flex flex-wrap gap-2">
-                            ${result.map(func => `<span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">${func}</span>`).join('')}
-                        </div>
-                    </div>
-                `;
-            } catch (error) {
-                showAlert('Failed to fetch activation functions: ' + error.message, 'error');
             }
         });
 
@@ -422,9 +428,9 @@
             const metricsDiv = document.getElementById('metricsDisplay');
             
             statusDiv.innerHTML = `
-                <div class="bg-green-500/20 border border-green-500/30 rounded-lg p-4 text-green-100">
+                <div class="bg-blue-100 border border-blue-200 rounded-lg p-4 text-blue-800">
                     <div class="flex items-center">
-                        <span class="text-2xl mr-2">✅</span>
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                         <div>
                             <h4 class="font-bold">Training Completed!</h4>
                             <p>${result.message}</p>
@@ -436,28 +442,31 @@
             const metrics = result.metrics;
             metricsDiv.innerHTML = `
                 <div class="space-y-3">
-                    <h4 class="text-white font-bold">📊 Performance Metrics</h4>
+                    <h4 class="text-gray-800 font-bold flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        Performance Metrics
+                    </h4>
                     <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div class="bg-white/5 rounded-lg p-3">
-                            <div class="text-white/70">Accuracy</div>
-                            <div class="text-xl font-bold text-green-400">${(metrics.accuracy * 100).toFixed(2)}%</div>
+                        <div class="bg-gray-100 rounded-lg p-3">
+                            <div class="text-gray-600">Accuracy</div>
+                            <div class="text-xl font-bold text-blue-600">${(metrics.accuracy * 100).toFixed(2)}%</div>
                         </div>
-                        <div class="bg-white/5 rounded-lg p-3">
-                            <div class="text-white/70">Spam Detection</div>
-                            <div class="text-xl font-bold text-blue-400">${(metrics.spamDetectionRate * 100).toFixed(2)}%</div>
+                        <div class="bg-gray-100 rounded-lg p-3">
+                            <div class="text-gray-600">Spam Detection</div>
+                            <div class="text-xl font-bold text-blue-600">${(metrics.spamDetectionRate * 100).toFixed(2)}%</div>
                         </div>
-                        <div class="bg-white/5 rounded-lg p-3">
-                            <div class="text-white/70">Total Emails</div>
-                            <div class="text-xl font-bold text-white">${metrics.totalEmails}</div>
+                        <div class="bg-gray-100 rounded-lg p-3">
+                            <div class="text-gray-600">Total Emails</div>
+                            <div class="text-xl font-bold text-gray-800">${metrics.totalEmails}</div>
                         </div>
-                        <div class="bg-white/5 rounded-lg p-3">
-                            <div class="text-white/70">Features</div>
-                            <div class="text-xl font-bold text-white">${metrics.featureDimensions}</div>
+                        <div class="bg-gray-100 rounded-lg p-3">
+                            <div class="text-gray-600">Features</div>
+                            <div class="text-xl font-bold text-gray-800">${metrics.featureDimensions}</div>
                         </div>
                     </div>
-                    <div class="bg-white/5 rounded-lg p-3">
-                        <div class="text-white/70">Architecture</div>
-                        <div class="text-white">${metrics.hiddenLayerSizes.join(' → ')} (${metrics.activationFunction})</div>
+                    <div class="bg-gray-100 rounded-lg p-3">
+                        <div class="text-gray-600">Architecture</div>
+                        <div class="text-gray-800">${metrics.hiddenLayerSizes.join(' → ')} (${metrics.activationFunction})</div>
                     </div>
                 </div>
             `;
@@ -482,25 +491,25 @@
                 <div class="space-y-4">
                     <div class="text-center">
                         <div class="text-6xl mb-2">${isSpam ? '🚨' : '✅'}</div>
-                        <div class="text-2xl font-bold ${isSpam ? 'text-red-400' : 'text-green-400'}">
+                        <div class="text-2xl font-bold ${isSpam ? 'text-red-600' : 'text-blue-600'}">
                             ${result.classification}
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white/5 rounded-lg p-4 text-center">
-                            <div class="text-white/70 text-sm">Prediction Score</div>
-                            <div class="text-xl font-bold text-white">${result.prediction.toFixed(4)}</div>
+                        <div class="bg-gray-100 rounded-lg p-4 text-center">
+                            <div class="text-gray-600 text-sm">Prediction Score</div>
+                            <div class="text-xl font-bold text-gray-800">${result.prediction.toFixed(4)}</div>
                         </div>
-                        <div class="bg-white/5 rounded-lg p-4 text-center">
-                            <div class="text-white/70 text-sm">Confidence</div>
-                            <div class="text-xl font-bold text-white">${confidence}%</div>
+                        <div class="bg-gray-100 rounded-lg p-4 text-center">
+                            <div class="text-gray-600 text-sm">Confidence</div>
+                            <div class="text-xl font-bold text-gray-800">${confidence}%</div>
                         </div>
                     </div>
                     
-                    <div class="bg-white/5 rounded-lg p-3">
-                        <div class="text-white/70 text-sm">Model Info</div>
-                        <div class="text-white">${result.modelInfo}</div>
+                    <div class="bg-gray-100 rounded-lg p-3">
+                        <div class="text-gray-600 text-sm">Model Info</div>
+                        <div class="text-gray-800">${result.modelInfo}</div>
                     </div>
                 </div>
             `;
@@ -513,31 +522,31 @@
             const displayDiv = document.getElementById('modelInfoDisplay');
             
             if (info.error) {
-                displayDiv.innerHTML = `<p class="text-red-400">${info.error}</p>`;
+                displayDiv.innerHTML = `<p class="text-red-600">${info.error}</p>`;
                 return;
             }
             
             displayDiv.innerHTML = `
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between">
-                        <span class="text-white/70">Input Size:</span>
-                        <span class="text-white font-mono">${info.inputSize}</span>
+                        <span class="text-gray-600">Input Size:</span>
+                        <span class="text-gray-800 font-mono">${info.inputSize}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-white/70">Hidden Layers:</span>
-                        <span class="text-white font-mono">${info.numHiddenLayers}</span>
+                        <span class="text-gray-600">Hidden Layers:</span>
+                        <span class="text-gray-800 font-mono">${info.numHiddenLayers}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-white/70">Architecture:</span>
-                        <span class="text-white font-mono">${info.hiddenLayerSizes.join(' → ')}</span>
+                        <span class="text-gray-600">Architecture:</span>
+                        <span class="text-gray-800 font-mono">${info.hiddenLayerSizes.join(' → ')}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-white/70">Activation:</span>
-                        <span class="text-white font-mono">${info.activationFunction}</span>
+                        <span class="text-gray-600">Activation:</span>
+                        <span class="text-gray-800 font-mono">${info.activationFunction}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-white/70">Learning Rate:</span>
-                        <span class="text-white font-mono">${info.learningRate}</span>
+                        <span class="text-gray-600">Learning Rate:</span>
+                        <span class="text-gray-800 font-mono">${info.learningRate}</span>
                     </div>
                 </div>
             `;
@@ -549,28 +558,28 @@
             displayDiv.innerHTML = `
                 <div class="space-y-3 text-sm">
                     <div class="flex justify-between">
-                        <span class="text-white/70">Accuracy:</span>
-                        <span class="text-green-400 font-bold">${(metrics.accuracy * 100).toFixed(2)}%</span>
+                        <span class="text-gray-600">Accuracy:</span>
+                        <span class="text-blue-600 font-bold">${(metrics.accuracy * 100).toFixed(2)}%</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-white/70">Spam Detection:</span>
-                        <span class="text-blue-400 font-bold">${(metrics.spamDetectionRate * 100).toFixed(2)}%</span>
+                        <span class="text-gray-600">Spam Detection:</span>
+                        <span class="text-blue-600 font-bold">${(metrics.spamDetectionRate * 100).toFixed(2)}%</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-white/70">Non-Spam Detection:</span>
-                        <span class="text-purple-400 font-bold">${(metrics.nonSpamDetectionRate * 100).toFixed(2)}%</span>
+                        <span class="text-gray-600">Non-Spam Detection:</span>
+                        <span class="text-blue-600 font-bold">${(metrics.nonSpamDetectionRate * 100).toFixed(2)}%</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-white/70">Training Set:</span>
-                        <span class="text-white font-mono">${metrics.trainSize} emails</span>
+                        <span class="text-gray-600">Training Set:</span>
+                        <span class="text-gray-800 font-mono">${metrics.trainSize} emails</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-white/70">Test Set:</span>
-                        <span class="text-white font-mono">${metrics.testSize} emails</span>
+                        <span class="text-gray-600">Test Set:</span>
+                        <span class="text-gray-800 font-mono">${metrics.testSize} emails</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-white/70">Features:</span>
-                        <span class="text-white font-mono">${metrics.featureDimensions}</span>
+                        <span class="text-gray-600">Features:</span>
+                        <span class="text-gray-800 font-mono">${metrics.featureDimensions}</span>
                     </div>
                 </div>
             `;
@@ -603,11 +612,11 @@
                         title: {
                             display: true,
                             text: 'Training Loss Over Time',
-                            color: 'white'
+                            color: '#1f2937'
                         },
                         legend: {
                             labels: {
-                                color: 'white'
+                                color: '#1f2937'
                             }
                         }
                     },
@@ -616,26 +625,26 @@
                             title: {
                                 display: true,
                                 text: 'Epoch',
-                                color: 'white'
+                                color: '#1f2937'
                             },
                             ticks: {
-                                color: 'white'
+                                color: '#1f2937'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: '#e5e7eb'
                             }
                         },
                         y: {
                             title: {
                                 display: true,
                                 text: 'Loss',
-                                color: 'white'
+                                color: '#1f2937'
                             },
                             ticks: {
-                                color: 'white'
+                                color: '#1f2937'
                             },
                             grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
+                                color: '#e5e7eb'
                             }
                         }
                     }
@@ -654,112 +663,108 @@
         }
 
         function showAlert(message, type) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg border transition-all duration-300 transform translate-x-full`;
-        
-        if (type === 'success') {
-            alertDiv.classList.add('bg-green-500/20', 'border-green-500/30', 'text-green-100');
-            alertDiv.innerHTML = `
-                <div class="flex items-center">
-                    <span class="text-xl mr-2">✅</span>
-                    <div>
-                        <p>${message}</p>
-                    </div>
-                </div>
-            `;
-        } else {
-            alertDiv.classList.add('bg-red-500/20', 'border-red-500/30', 'text-red-100');
-            alertDiv.innerHTML = `
-                <div class="flex items-center">
-                    <span class="text-xl mr-2">⚠️</span>
-                    <div>
-                        <p>${message}</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        document.body.appendChild(alertDiv);
-
-        // Animate in
-        setTimeout(() => {
-            alertDiv.classList.remove('translate-x-full');
-        }, 100);
-
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            alertDiv.classList.add('translate-x-full');
-            setTimeout(() => {
-                alertDiv.remove();
-            }, 300);
-        }, 3000);
-    }
-
-    // Initialize page
-    document.addEventListener('DOMContentLoaded', () => {
-        // Update remove buttons visibility on page load
-        updateRemoveButtons();
-
-        // Fetch initial model info
-        document.getElementById('refreshModelInfo').click();
-
-        // Fetch initial metrics
-        document.getElementById('refreshMetrics').click();
-
-        // Fetch available activation functions
-        document.getElementById('getActivationFunctions').click();
-    });
-
-    // Form validation enhancements
-    document.getElementById('trainingForm').addEventListener('input', (e) => {
-        if (e.target.classList.contains('layer-size-input')) {
-            const value = parseInt(e.target.value);
-            if (value < 1 || value > 1000) {
-                e.target.classList.add('border-red-500');
-                showAlert('Layer size must be between 1 and 1000', 'error');
-            } else {
-                e.target.classList.remove('border-red-500');
-            }
-        } else if (e.target.id === 'learningRate') {
-            const value = parseFloat(e.target.value);
-            if (value < 0.001 || value > 1) {
-                e.target.classList.add('border-red-500');
-                showAlert('Learning rate must be between 0.001 and 1', 'error');
-            } else {
-                e.target.classList.remove('border-red-500');
-            }
-        } else if (e.target.id === 'epochs') {
-            const value = parseInt(e.target.value);
-            if (value < 1 || value > 10000) {
-                e.target.classList.add('border-red-500');
-                showAlert('Epochs must be between 1 and 10000', 'error');
-            } else {
-                e.target.classList.remove('border-red-500');
-            }
-        }
-    });
-
-    // Reset form states when switching tabs
-    document.querySelectorAll('.tab-button').forEach(button => {
-        button.addEventListener('click', () => {
-            // Reset prediction form
-            document.getElementById('predictionForm').reset();
-            document.getElementById('predictionResult').classList.add('hidden');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg border transition-all duration-300 transform translate-x-full shadow-md`;
             
-            // Reset any error states in training form
-            document.querySelectorAll('.layer-size-input, #learningRate, #epochs').forEach(input => {
-                input.classList.remove('border-red-500');
+            if (type === 'success') {
+                alertDiv.classList.add('bg-blue-100', 'border-blue-200', 'text-blue-800');
+                alertDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        <div>
+                            <p>${message}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                alertDiv.classList.add('bg-red-100', 'border-red-200', 'text-red-800');
+                alertDiv.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div>
+                            <p>${message}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.body.appendChild(alertDiv);
+
+            // Animate in
+            setTimeout(() => {
+                alertDiv.classList.remove('translate-x-full');
+            }, 100);
+
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                alertDiv.classList.add('translate-x-full');
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update remove buttons visibility on page load
+            updateRemoveButtons();
+
+            // Fetch initial model info
+            document.getElementById('refreshModelInfo').click();
+
+            // Fetch initial metrics
+            document.getElementById('refreshMetrics').click();
+        });
+
+        // Form validation enhancements
+        document.getElementById('trainingForm').addEventListener('input', (e) => {
+            if (e.target.classList.contains('layer-size-input')) {
+                const value = parseInt(e.target.value);
+                if (value < 1 || value > 1000) {
+                    e.target.classList.add('border-red-500');
+                    showAlert('Layer size must be between 1 and 1000', 'error');
+                } else {
+                    e.target.classList.remove('border-red-500');
+                }
+            } else if (e.target.id === 'learningRate') {
+                const value = parseFloat(e.target.value);
+                if (value < 0.001 || value > 1) {
+                    e.target.classList.add('border-red-500');
+                    showAlert('Learning rate must be between 0.001 and 1', 'error');
+                } else {
+                    e.target.classList.remove('border-red-500');
+                }
+            } else if (e.target.id === 'epochs') {
+                const value = parseInt(e.target.value);
+                if (value < 1 || value > 10000) {
+                    e.target.classList.add('border-red-500');
+                    showAlert('Epochs must be between 1 and 10000', 'error');
+                } else {
+                    e.target.classList.remove('border-red-500');
+                }
+            }
+        });
+
+        // Reset form states when switching tabs
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Reset prediction form
+                document.getElementById('predictionForm').reset();
+                document.getElementById('predictionResult').classList.add('hidden');
+                
+                // Reset any error states in training form
+                document.querySelectorAll('.layer-size-input, #learningRate, #epochs').forEach(input => {
+                    input.classList.remove('border-red-500');
+                });
             });
         });
-    });
 
-    // Handle window resize for chart responsiveness
-    window.addEventListener('resize', () => {
-        if (lossChart) {
-            lossChart.resize();
-        }
-    });
-
-</script>
+        // Handle window resize for chart responsiveness
+        window.addEventListener('resize', () => {
+            if (lossChart) {
+                lossChart.resize();
+            }
+        });
+    </script>
 </body>
 </html>
