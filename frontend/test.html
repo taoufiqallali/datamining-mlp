@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network Email Classifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">🧠 Neural Network Email Classifier</h1>
+            <p class="text-white/80 text-lg">Train and test multi-layer perceptron models for spam detection</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex justify-center mb-8">
+            <div class="glass-effect rounded-lg p-1">
+                <button id="trainTab" class="tab-button active px-6 py-2 rounded-md font-medium transition-all duration-300">
+                    🚀 Train Model
+                </button>
+                <button id="predictTab" class="tab-button px-6 py-2 rounded-md font-medium transition-all duration-300">
+                    🔍 Predict
+                </button>
+                <button id="metricsTab" class="tab-button px-6 py-2 rounded-md font-medium transition-all duration-300">
+                    📊 Metrics
+                </button>
+            </div>
+        </div>
+
+        <!-- Training Panel -->
+        <div id="trainPanel" class="panel active">
+            <div class="glass-effect rounded-xl p-8 mb-6">
+                <h2 class="text-2xl font-bold text-white mb-6">🎯 Configure Neural Network</h2>
+                
+                <form id="trainingForm" class="space-y-6">
+                    <!-- Hidden Layers Configuration -->
+                    <div>
+                        <label class="block text-white font-medium mb-3">Hidden Layer Architecture</label>
+                        <div id="hiddenLayersContainer" class="space-y-3">
+                            <div class="hidden-layer-input flex items-center space-x-3">
+                                <span class="text-white/80 w-16">Layer 1:</span>
+                                <input type="number" class="layer-size-input bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white placeholder-white/50 flex-1" 
+                                       placeholder="Number of neurons" value="10" min="1" max="1000">
+                                <button type="button" class="remove-layer-btn text-red-400 hover:text-red-300 px-3 py-2 rounded-lg transition-colors duration-200" style="display: none;">
+                                    ❌
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" id="addLayerBtn" class="mt-3 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                            ➕ Add Layer
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Activation Function -->
+                        <div>
+                            <label class="block text-white font-medium mb-2">Activation Function</label>
+                            <select id="activationFunction" class="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white">
+                                <option value="RELU">ReLU</option>
+                                <option value="SIGMOID">Sigmoid</option>
+                                <option value="TANH">Tanh</option>
+                                <option value="LEAKY_RELU">Leaky ReLU</option>
+                            </select>
+                        </div>
+
+                        <!-- Learning Rate -->
+                        <div>
+                            <label class="block text-white font-medium mb-2">Learning Rate</label>
+                            <input type="number" id="learningRate" step="0.001" value="0.01" min="0.001" max="1"
+                                   class="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white placeholder-white/50">
+                        </div>
+
+                        <!-- Epochs -->
+                        <div>
+                            <label class="block text-white font-medium mb-2">Training Epochs</label>
+                            <input type="number" id="epochs" value="100" min="1" max="10000"
+                                   class="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white placeholder-white/50">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="trainBtn" class="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        🚀 Start Training
+                    </button>
+                </form>
+            </div>
+
+            <!-- Training Results -->
+            <div id="trainingResults" class="glass-effect rounded-xl p-8 hidden">
+                <h3 class="text-xl font-bold text-white mb-4">📈 Training Results</h3>
+                <div id="trainingStatus" class="mb-4"></div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div id="metricsDisplay"></div>
+                    <div>
+                        <canvas id="lossChart" width="400" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Panel -->
+        <div id="predictPanel" class="panel hidden">
+            <div class="glass-effect rounded-xl p-8">
+                <h2 class="text-2xl font-bold text-white mb-6">🔮 Email Classification</h2>
+                
+                <form id="predictionForm" class="space-y-6">
+                    <div>
+                        <label class="block text-white font-medium mb-3">Email Features (Comma-separated values)</label>
+                        <textarea id="featuresInput" rows="4" 
+                                  class="w-full bg-white/10 border border-white/30 rounded-lg px-4 py-3 text-white placeholder-white/50"
+                                  placeholder="Enter feature values separated by commas, e.g., 0.5, 1.2, 0.0, 2.1, ..."></textarea>
+                        <p class="text-white/60 text-sm mt-2">💡 Tip: Enter numerical feature values that represent email characteristics</p>
+                    </div>
+
+                    <button type="submit" id="predictBtn" class="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        🔍 Classify Email
+                    </button>
+                </form>
+
+                <!-- Prediction Result -->
+                <div id="predictionResult" class="mt-6 hidden">
+                    <div class="glass-effect rounded-lg p-6">
+                        <h3 class="text-xl font-bold text-white mb-4">🎯 Classification Result</h3>
+                        <div id="predictionDisplay"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Panel -->
+        <div id="metricsPanel" class="panel hidden">
+            <div class="glass-effect rounded-xl p-8">
+                <h2 class="text-2xl font-bold text-white mb-6">📊 Model Performance</h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Current Model Info -->
+                    <div class="glass-effect rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-white mb-4">🧠 Current Model</h3>
+                        <div id="modelInfoDisplay">
+                            <p class="text-white/60">No model trained yet</p>
+                        </div>
+                        <button id="refreshModelInfo" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                            🔄 Refresh Info
+                        </button>
+                    </div>
+
+                    <!-- Last Training Metrics -->
+                    <div class="glass-effect rounded-lg p-6">
+                        <h3 class="text-lg font-bold text-white mb-4">📈 Last Training</h3>
+                        <div id="lastMetricsDisplay">
+                            <p class="text-white/60">No training completed yet</p>
+                        </div>
+                        <button id="refreshMetrics" class="mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
+                            🔄 Refresh Metrics
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Available Functions -->
+                
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="glass-effect rounded-lg p-8 text-center">
+                <div class="loading-spinner mx-auto mb-4"></div>
+                <p class="text-white text-lg">Processing...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Configuration
+        const API_BASE = 'http://localhost:8080/api';
+        
+        // Global variables
+        let lossChart = null;
+        
+        // Tab Management
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all tabs and panels
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('active', 'bg-white/20', 'text-white');
+                    btn.classList.add('text-white/70');
+                });
+                document.querySelectorAll('.panel').forEach(panel => {
+                    panel.classList.add('hidden');
+                    panel.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                button.classList.add('active', 'bg-white/20', 'text-white');
+                button.classList.remove('text-white/70');
+                
+                // Show corresponding panel
+                const panelId = button.id.replace('Tab', 'Panel');
+                const panel = document.getElementById(panelId);
+                panel.classList.remove('hidden');
+                panel.classList.add('active', 'fade-in');
+            });
+        });
+        
+        // Set initial active state
+        document.getElementById('trainTab').classList.add('bg-white/20', 'text-white');
+        document.querySelectorAll('.tab-button:not(#trainTab)').forEach(btn => {
+            btn.classList.add('text-white/70');
+        });
+
+        // Hidden Layers Management
+        let layerCount = 1;
+        
+        document.getElementById('addLayerBtn').addEventListener('click', () => {
+            layerCount++;
+            const container = document.getElementById('hiddenLayersContainer');
+            const newLayer = document.createElement('div');
+            newLayer.className = 'hidden-layer-input flex items-center space-x-3';
+            newLayer.innerHTML = `
+                <span class="text-white/80 w-16">Layer ${layerCount}:</span>
+                <input type="number" class="layer-size-input bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-white placeholder-white/50 flex-1" 
+                       placeholder="Number of neurons" value="10" min="1" max="1000">
+                <button type="button" class="remove-layer-btn text-red-400 hover:text-red-300 px-3 py-2 rounded-lg transition-colors duration-200">
+                    ❌
+                </button>
+            `;
+            container.appendChild(newLayer);
+            
+            // Add remove functionality
+            newLayer.querySelector('.remove-layer-btn').addEventListener('click', () => {
+                newLayer.remove();
+                updateLayerNumbers();
+            });
+            
+            // Show remove buttons for all layers except the first
+            updateRemoveButtons();
+        });
+        
+        function updateLayerNumbers() {
+            const layers = document.querySelectorAll('.hidden-layer-input');
+            layers.forEach((layer, index) => {
+                layer.querySelector('span').textContent = `Layer ${index + 1}:`;
+            });
+            layerCount = layers.length;
+        }
+        
+        function updateRemoveButtons() {
+            const removeButtons = document.querySelectorAll('.remove-layer-btn');
+            removeButtons.forEach((btn, index) => {
+                btn.style.display = index === 0 && removeButtons.length === 1 ? 'none' : 'block';
+            });
+        }
+
+        // Training Form Handler
+        document.getElementById('trainingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const hiddenSizes = Array.from(document.querySelectorAll('.layer-size-input'))
+                .map(input => parseInt(input.value))
+                .filter(val => val > 0);
+            
+            if (hiddenSizes.length === 0) {
+                showAlert('Please specify at least one hidden layer with valid size', 'error');
+                return;
+            }
+            
+            const requestData = {
+                hiddenSizes: hiddenSizes,
+                activationFunction: document.getElementById('activationFunction').value,
+                learningRate: parseFloat(document.getElementById('learningRate').value),
+                epochs: parseInt(document.getElementById('epochs').value)
+            };
+            
+            try {
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/train`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const result = await response.json();
+                showLoading(false);
+                
+                if (result.status === 'success') {
+                    displayTrainingResults(result);
+                    showAlert('Model trained successfully!', 'success');
+                } else {
+                    showAlert(result.message || 'Training failed', 'error');
+                }
+            } catch (error) {
+                showLoading(false);
+                showAlert('Network error: ' + error.message, 'error');
+            }
+        });
+
+        // Prediction Form Handler
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const featuresText = document.getElementById('featuresInput').value.trim();
+            if (!featuresText) {
+                showAlert('Please enter feature values', 'error');
+                return;
+            }
+            
+            try {
+                const features = featuresText.split(',').map(val => parseFloat(val.trim()));
+                
+                if (features.some(isNaN)) {
+                    showAlert('Invalid feature values. Please enter numbers only.', 'error');
+                    return;
+                }
+                
+                showLoading(true);
+                const response = await fetch(`${API_BASE}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(features)
+                });
+                
+                const result = await response.json();
+                showLoading(false);
+                
+                if (result.error) {
+                    showAlert(result.error, 'error');
+                } else {
+                    displayPredictionResult(result);
+                }
+            } catch (error) {
+                showLoading(false);
+                showAlert('Network error: ' + error.message, 'error');
+            }
+        });
+
+        // Metrics Panel Functions
+        document.getElementById('refreshModelInfo').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/model-info`);
+                const result = await response.json();
+                displayModelInfo(result);
+            } catch (error) {
+                showAlert('Failed to fetch model info: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('refreshMetrics').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/metrics`);
+                if (response.ok) {
+                    const result = await response.json();
+                    displayLastMetrics(result);
+                } else {
+                    document.getElementById('lastMetricsDisplay').innerHTML = '<p class="text-white/60">No training metrics available</p>';
+                }
+            } catch (error) {
+                showAlert('Failed to fetch metrics: ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('getActivationFunctions').addEventListener('click', async () => {
+            try {
+                const response = await fetch(`${API_BASE}/activation-functions`);
+                const result = await response.json();
+                document.getElementById('functionsResult').innerHTML = `
+                    <div class="glass-effect rounded-lg p-4 mt-4">
+                        <h4 class="text-white font-bold mb-2">Available Activation Functions:</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${result.map(func => `<span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">${func}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                showAlert('Failed to fetch activation functions: ' + error.message, 'error');
+            }
+        });
+
+        // Display Functions
+        function displayTrainingResults(result) {
+            const resultsDiv = document.getElementById('trainingResults');
+            const statusDiv = document.getElementById('trainingStatus');
+            const metricsDiv = document.getElementById('metricsDisplay');
+            
+            statusDiv.innerHTML = `
+                <div class="bg-green-500/20 border border-green-500/30 rounded-lg p-4 text-green-100">
+                    <div class="flex items-center">
+                        <span class="text-2xl mr-2">✅</span>
+                        <div>
+                            <h4 class="font-bold">Training Completed!</h4>
+                            <p>${result.message}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const metrics = result.metrics;
+            metricsDiv.innerHTML = `
+                <div class="space-y-3">
+                    <h4 class="text-white font-bold">📊 Performance Metrics</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-white/70">Accuracy</div>
+                            <div class="text-xl font-bold text-green-400">${(metrics.accuracy * 100).toFixed(2)}%</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-white/70">Spam Detection</div>
+                            <div class="text-xl font-bold text-blue-400">${(metrics.spamDetectionRate * 100).toFixed(2)}%</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-white/70">Total Emails</div>
+                            <div class="text-xl font-bold text-white">${metrics.totalEmails}</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-3">
+                            <div class="text-white/70">Features</div>
+                            <div class="text-xl font-bold text-white">${metrics.featureDimensions}</div>
+                        </div>
+                    </div>
+                    <div class="bg-white/5 rounded-lg p-3">
+                        <div class="text-white/70">Architecture</div>
+                        <div class="text-white">${metrics.hiddenLayerSizes.join(' → ')} (${metrics.activationFunction})</div>
+                    </div>
+                </div>
+            `;
+            
+            // Create loss chart
+            if (result.epochLosses && result.epochLosses.length > 0) {
+                createLossChart(result.epochLosses);
+            }
+            
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.classList.add('fade-in');
+        }
+
+        function displayPredictionResult(result) {
+            const resultDiv = document.getElementById('predictionResult');
+            const displayDiv = document.getElementById('predictionDisplay');
+            
+            const isSpam = result.isSpam;
+            const confidence = (result.confidence * 100).toFixed(2);
+            
+            displayDiv.innerHTML = `
+                <div class="space-y-4">
+                    <div class="text-center">
+                        <div class="text-6xl mb-2">${isSpam ? '🚨' : '✅'}</div>
+                        <div class="text-2xl font-bold ${isSpam ? 'text-red-400' : 'text-green-400'}">
+                            ${result.classification}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 rounded-lg p-4 text-center">
+                            <div class="text-white/70 text-sm">Prediction Score</div>
+                            <div class="text-xl font-bold text-white">${result.prediction.toFixed(4)}</div>
+                        </div>
+                        <div class="bg-white/5 rounded-lg p-4 text-center">
+                            <div class="text-white/70 text-sm">Confidence</div>
+                            <div class="text-xl font-bold text-white">${confidence}%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white/5 rounded-lg p-3">
+                        <div class="text-white/70 text-sm">Model Info</div>
+                        <div class="text-white">${result.modelInfo}</div>
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.classList.remove('hidden');
+            resultDiv.classList.add('fade-in');
+        }
+
+        function displayModelInfo(info) {
+            const displayDiv = document.getElementById('modelInfoDisplay');
+            
+            if (info.error) {
+                displayDiv.innerHTML = `<p class="text-red-400">${info.error}</p>`;
+                return;
+            }
+            
+            displayDiv.innerHTML = `
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Input Size:</span>
+                        <span class="text-white font-mono">${info.inputSize}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Hidden Layers:</span>
+                        <span class="text-white font-mono">${info.numHiddenLayers}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Architecture:</span>
+                        <span class="text-white font-mono">${info.hiddenLayerSizes.join(' → ')}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Activation:</span>
+                        <span class="text-white font-mono">${info.activationFunction}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Learning Rate:</span>
+                        <span class="text-white font-mono">${info.learningRate}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayLastMetrics(metrics) {
+            const displayDiv = document.getElementById('lastMetricsDisplay');
+            
+            displayDiv.innerHTML = `
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Accuracy:</span>
+                        <span class="text-green-400 font-bold">${(metrics.accuracy * 100).toFixed(2)}%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Spam Detection:</span>
+                        <span class="text-blue-400 font-bold">${(metrics.spamDetectionRate * 100).toFixed(2)}%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Non-Spam Detection:</span>
+                        <span class="text-purple-400 font-bold">${(metrics.nonSpamDetectionRate * 100).toFixed(2)}%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Training Set:</span>
+                        <span class="text-white font-mono">${metrics.trainSize} emails</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Test Set:</span>
+                        <span class="text-white font-mono">${metrics.testSize} emails</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-white/70">Features:</span>
+                        <span class="text-white font-mono">${metrics.featureDimensions}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createLossChart(epochLosses) {
+            const ctx = document.getElementById('lossChart').getContext('2d');
+            
+            if (lossChart) {
+                lossChart.destroy();
+            }
+            
+            lossChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: epochLosses.map(el => el.epoch),
+                    datasets: [{
+                        label: 'Training Loss',
+                        data: epochLosses.map(el => el.loss),
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Training Loss Over Time',
+                            color: 'white'
+                        },
+                        legend: {
+                            labels: {
+                                color: 'white'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Epoch',
+                                color: 'white'
+                            },
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Loss',
+                                color: 'white'
+                            },
+                            ticks: {
+                                color: 'white'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Utility Functions
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-lg border transition-all duration-300 transform translate-x-full`;
+        
+        if (type === 'success') {
+            alertDiv.classList.add('bg-green-500/20', 'border-green-500/30', 'text-green-100');
+            alertDiv.innerHTML = `
+                <div class="flex items-center">
+                    <span class="text-xl mr-2">✅</span>
+                    <div>
+                        <p>${message}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            alertDiv.classList.add('bg-red-500/20', 'border-red-500/30', 'text-red-100');
+            alertDiv.innerHTML = `
+                <div class="flex items-center">
+                    <span class="text-xl mr-2">⚠️</span>
+                    <div>
+                        <p>${message}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.body.appendChild(alertDiv);
+
+        // Animate in
+        setTimeout(() => {
+            alertDiv.classList.remove('translate-x-full');
+        }, 100);
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            alertDiv.classList.add('translate-x-full');
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 300);
+        }, 3000);
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', () => {
+        // Update remove buttons visibility on page load
+        updateRemoveButtons();
+
+        // Fetch initial model info
+        document.getElementById('refreshModelInfo').click();
+
+        // Fetch initial metrics
+        document.getElementById('refreshMetrics').click();
+
+        // Fetch available activation functions
+        document.getElementById('getActivationFunctions').click();
+    });
+
+    // Form validation enhancements
+    document.getElementById('trainingForm').addEventListener('input', (e) => {
+        if (e.target.classList.contains('layer-size-input')) {
+            const value = parseInt(e.target.value);
+            if (value < 1 || value > 1000) {
+                e.target.classList.add('border-red-500');
+                showAlert('Layer size must be between 1 and 1000', 'error');
+            } else {
+                e.target.classList.remove('border-red-500');
+            }
+        } else if (e.target.id === 'learningRate') {
+            const value = parseFloat(e.target.value);
+            if (value < 0.001 || value > 1) {
+                e.target.classList.add('border-red-500');
+                showAlert('Learning rate must be between 0.001 and 1', 'error');
+            } else {
+                e.target.classList.remove('border-red-500');
+            }
+        } else if (e.target.id === 'epochs') {
+            const value = parseInt(e.target.value);
+            if (value < 1 || value > 10000) {
+                e.target.classList.add('border-red-500');
+                showAlert('Epochs must be between 1 and 10000', 'error');
+            } else {
+                e.target.classList.remove('border-red-500');
+            }
+        }
+    });
+
+    // Reset form states when switching tabs
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            // Reset prediction form
+            document.getElementById('predictionForm').reset();
+            document.getElementById('predictionResult').classList.add('hidden');
+            
+            // Reset any error states in training form
+            document.querySelectorAll('.layer-size-input, #learningRate, #epochs').forEach(input => {
+                input.classList.remove('border-red-500');
+            });
+        });
+    });
+
+    // Handle window resize for chart responsiveness
+    window.addEventListener('resize', () => {
+        if (lossChart) {
+            lossChart.resize();
+        }
+    });
+
+</script>
+</body>
+</html>

@@ -4,11 +4,9 @@ import m2i.datamining_mlp.DTO.TrainingRequest;
 import m2i.datamining_mlp.DTO.TrainingResponse;
 import m2i.datamining_mlp.model.Classifier;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.InputStreamReader;
 import java.util.*;
 
 @Service
@@ -22,6 +20,31 @@ public class ClassifierService {
         List<TrainingResponse.EpochLoss> epochLosses = new ArrayList<>();
 
         try {
+            // Validate input parameters
+            if (request.getHiddenSizes() == null || request.getHiddenSizes().length == 0) {
+                response.setStatus("error");
+                response.setMessage("Hidden layer sizes must be specified");
+                return response;
+            }
+
+            for (int size : request.getHiddenSizes()) {
+                if (size <= 0) {
+                    response.setStatus("error");
+                    response.setMessage("All hidden layer sizes must be positive");
+                    return response;
+                }
+            }
+
+            // Parse activation function
+            Classifier.ActivationFunction activationFunction;
+            try {
+                activationFunction = Classifier.ActivationFunction.valueOf(request.getActivationFunction().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                response.setStatus("error");
+                response.setMessage("Invalid activation function. Valid options: SIGMOID, TANH, RELU, LEAKY_RELU");
+                return response;
+            }
+
             // Load and parse dataset
             List<String[]> dataset = loadDataset();
 
@@ -91,23 +114,31 @@ public class ClassifierService {
                 yTest[i] = target[indices.get(i + trainSize)];
             }
 
-            // Create and train classifier
-            currentClassifier = new Classifier(featureCount, request.getHiddenSize(), request.getLearningRate());
+            // Create and train classifier with multiple hidden layers
+            currentClassifier = new Classifier(featureCount, request.getHiddenSizes(),
+                    request.getLearningRate(), activationFunction);
 
             // Custom training with epoch tracking
             for (int epoch = 0; epoch < request.getEpochs(); epoch++) {
                 double totalLoss = 0.0;
 
-                for (int i = 0; i < xTrain.length; i++) {
-                    currentClassifier.trainSample(xTrain[i], yTrain[i]);
+                // Shuffle training data for each epoch
+                List<Integer> trainIndices = new ArrayList<>();
+                for (int i = 0; i < trainSize; i++) {
+                    trainIndices.add(i);
+                }
+                Collections.shuffle(trainIndices);
 
-                    double prediction = currentClassifier.predict(xTrain[i]);
-                    double loss = Math.pow(yTrain[i] - prediction, 2);
+                for (int idx : trainIndices) {
+                    currentClassifier.trainSample(xTrain[idx], yTrain[idx]);
+
+                    double prediction = currentClassifier.predict(xTrain[idx]);
+                    double loss = Math.pow(yTrain[idx] - prediction, 2);
                     totalLoss += loss;
                 }
 
                 double avgLoss = totalLoss / xTrain.length;
-                if (epoch % 10 == 0) {
+                if (epoch % 10 == 0 || epoch == request.getEpochs() - 1) {
                     epochLosses.add(new TrainingResponse.EpochLoss(epoch, avgLoss));
                 }
             }
@@ -136,7 +167,7 @@ public class ClassifierService {
                 }
             }
 
-            // Build response
+            // Build response with enhanced metrics
             TrainingResponse.TrainingMetrics metrics = new TrainingResponse.TrainingMetrics();
             metrics.setTotalEmails(totalEmails);
             metrics.setSpamEmails(spamCount);
@@ -148,16 +179,23 @@ public class ClassifierService {
             metrics.setSpamDetectionRate(totalSpam > 0 ? (double) correctSpam / totalSpam : 0);
             metrics.setNonSpamDetectionRate(totalNotSpam > 0 ? (double) correctNotSpam / totalNotSpam : 0);
 
+            // Set neural network architecture information
+            metrics.setHiddenLayerSizes(request.getHiddenSizes());
+            metrics.setNumHiddenLayers(request.getHiddenSizes().length);
+            metrics.setActivationFunction(request.getActivationFunction());
+
             lastTrainingMetrics = metrics;
 
             response.setStatus("success");
-            response.setMessage("Model trained successfully");
+            response.setMessage(String.format("Model trained successfully with %d hidden layers using %s activation",
+                    request.getHiddenSizes().length, request.getActivationFunction()));
             response.setMetrics(metrics);
             response.setEpochLosses(epochLosses);
 
         } catch (Exception e) {
             response.setStatus("error");
             response.setMessage("Training failed: " + e.getMessage());
+            e.printStackTrace(); // For debugging
         }
 
         return response;
@@ -172,6 +210,12 @@ public class ClassifierService {
         }
 
         try {
+            if (features.length != currentClassifier.getInputSize()) {
+                result.put("error", String.format("Feature vector size mismatch. Expected %d, got %d",
+                        currentClassifier.getInputSize(), features.length));
+                return result;
+            }
+
             double prediction = currentClassifier.predict(features);
             boolean isSpam = prediction > 0.5;
             double confidence = isSpam ? prediction : (1 - prediction);
@@ -180,6 +224,9 @@ public class ClassifierService {
             result.put("isSpam", isSpam);
             result.put("classification", isSpam ? "SPAM" : "NOT SPAM");
             result.put("confidence", confidence);
+            result.put("modelInfo", String.format("Network: %d layers, %s activation",
+                    currentClassifier.getNumHiddenLayers(),
+                    currentClassifier.getActivationFunction()));
 
         } catch (Exception e) {
             result.put("error", "Prediction failed: " + e.getMessage());
@@ -190,6 +237,23 @@ public class ClassifierService {
 
     public TrainingResponse.TrainingMetrics getLastTrainingMetrics() {
         return lastTrainingMetrics;
+    }
+
+    public Map<String, Object> getModelInfo() {
+        Map<String, Object> info = new HashMap<>();
+
+        if (currentClassifier == null) {
+            info.put("error", "No trained model available");
+            return info;
+        }
+
+        info.put("inputSize", currentClassifier.getInputSize());
+        info.put("hiddenLayerSizes", currentClassifier.getHiddenSizes());
+        info.put("numHiddenLayers", currentClassifier.getNumHiddenLayers());
+        info.put("activationFunction", currentClassifier.getActivationFunction().toString());
+        info.put("learningRate", currentClassifier.getLearningRate());
+
+        return info;
     }
 
     private List<String[]> loadDataset() throws Exception {

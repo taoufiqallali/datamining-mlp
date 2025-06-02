@@ -1,25 +1,34 @@
 package m2i.datamining_mlp.DTO;
 
 public class TrainingRequest {
-    private int hiddenSize;
+    private int[] hiddenSizes; // Array of hidden layer sizes
+    private String activationFunction; // Activation function name
     private double learningRate;
     private int epochs;
 
     public TrainingRequest() {}
 
-    public TrainingRequest(int hiddenSize, double learningRate, int epochs) {
-        this.hiddenSize = hiddenSize;
-
+    public TrainingRequest(int[] hiddenSizes, String activationFunction, double learningRate, int epochs) {
+        this.hiddenSizes = hiddenSizes;
+        this.activationFunction = activationFunction;
         this.learningRate = learningRate;
         this.epochs = epochs;
     }
 
-    public int getHiddenSize() {
-        return hiddenSize;
+    public int[] getHiddenSizes() {
+        return hiddenSizes;
     }
 
-    public void setHiddenSize(int hiddenSize) {
-        this.hiddenSize = hiddenSize;
+    public void setHiddenSizes(int[] hiddenSizes) {
+        this.hiddenSizes = hiddenSizes;
+    }
+
+    public String getActivationFunction() {
+        return activationFunction;
+    }
+
+    public void setActivationFunction(String activationFunction) {
+        this.activationFunction = activationFunction;
     }
 
     public double getLearningRate() {

@@ -1,3 +1,4 @@
+// TrainingResponse remains the same but with additional metrics
 package m2i.datamining_mlp.DTO;
 
 import java.util.List;
@@ -18,10 +19,14 @@ public class TrainingResponse {
         private double accuracy;
         private double spamDetectionRate;
         private double nonSpamDetectionRate;
+        // New fields for neural network architecture
+        private int[] hiddenLayerSizes;
+        private int numHiddenLayers;
+        private String activationFunction;
 
-        // Constructors, getters and setters
         public TrainingMetrics() {}
 
+        // Existing getters and setters
         public int getTotalEmails() { return totalEmails; }
         public void setTotalEmails(int totalEmails) { this.totalEmails = totalEmails; }
 
@@ -48,6 +53,16 @@ public class TrainingResponse {
 
         public double getNonSpamDetectionRate() { return nonSpamDetectionRate; }
         public void setNonSpamDetectionRate(double nonSpamDetectionRate) { this.nonSpamDetectionRate = nonSpamDetectionRate; }
+
+        // New getters and setters
+        public int[] getHiddenLayerSizes() { return hiddenLayerSizes; }
+        public void setHiddenLayerSizes(int[] hiddenLayerSizes) { this.hiddenLayerSizes = hiddenLayerSizes; }
+
+        public int getNumHiddenLayers() { return numHiddenLayers; }
+        public void setNumHiddenLayers(int numHiddenLayers) { this.numHiddenLayers = numHiddenLayers; }
+
+        public String getActivationFunction() { return activationFunction; }
+        public void setActivationFunction(String activationFunction) { this.activationFunction = activationFunction; }
     }
 
     public static class EpochLoss {
