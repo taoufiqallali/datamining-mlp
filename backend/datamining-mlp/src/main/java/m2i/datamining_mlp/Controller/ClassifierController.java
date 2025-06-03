@@ -1,5 +1,6 @@
 package m2i.datamining_mlp.Controller;
 
+import m2i.datamining_mlp.DTO.EmailRequest;
 import m2i.datamining_mlp.DTO.TrainingRequest;
 import m2i.datamining_mlp.DTO.TrainingResponse;
 import m2i.datamining_mlp.service.ClassifierService;
@@ -72,15 +73,14 @@ public class ClassifierController {
 
     /**
      * Predict email classification
-     * @param features Email feature vector
      * @return Prediction result
      */
     @PostMapping("/predict")
-    public ResponseEntity<Map<String, Object>> predictEmail(@RequestBody double[] features) {
+    public ResponseEntity<Map<String, Object>> predictEmail(@RequestBody EmailRequest request) {
+        double[] features = classifierService.textToFeatureVector(request.getEmail());
         Map<String, Object> result = classifierService.predictEmail(features);
         return ResponseEntity.ok(result);
     }
-
     /**
      * Get last training metrics
      * @return Training metrics from the last training session
