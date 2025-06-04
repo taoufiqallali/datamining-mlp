@@ -1,7 +1,12 @@
 package m2i.datamining_mlp.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Random;
 
+@Setter
+@Getter
 public class Classifier {
     // Network architecture
     private int inputSize;

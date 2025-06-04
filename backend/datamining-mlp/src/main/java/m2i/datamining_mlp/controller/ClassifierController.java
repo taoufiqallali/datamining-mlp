@@ -1,4 +1,4 @@
-package m2i.datamining_mlp.Controller;
+package m2i.datamining_mlp.controller;
 
 import m2i.datamining_mlp.DTO.EmailRequest;
 import m2i.datamining_mlp.DTO.TrainingRequest;
@@ -18,25 +18,12 @@ public class ClassifierController {
     @Autowired
     private ClassifierService classifierService;
 
-    /**
-     * Train model with configurable hidden layers and activation function
-     * @param request Training configuration including hidden layer sizes and activation function
-     * @return Training response with metrics
-     */
     @PostMapping("/train")
     public ResponseEntity<TrainingResponse> trainModel(@RequestBody TrainingRequest request) {
         TrainingResponse response = classifierService.trainModel(request);
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Alternative training endpoint with URL parameters (for simple configurations)
-     * @param hiddenSizes Comma-separated list of hidden layer sizes (e.g., "10,5" for two layers)
-     * @param activationFunction Activation function name (SIGMOID, TANH, RELU, LEAKY_RELU)
-     * @param learningRate Learning rate
-     * @param epochs Number of training epochs
-     * @return Training response
-     */
     @PostMapping("/train-simple")
     public ResponseEntity<TrainingResponse> trainModelSimple(
             @RequestParam("hiddenSizes") String hiddenSizes,
@@ -45,7 +32,6 @@ public class ClassifierController {
             @RequestParam("epochs") int epochs) {
 
         try {
-            // Parse hidden layer sizes from comma-separated string
             String[] sizeStrings = hiddenSizes.split(",");
             int[] hiddenLayerSizes = new int[sizeStrings.length];
 
@@ -71,20 +57,20 @@ public class ClassifierController {
         }
     }
 
-    /**
-     * Predict email classification
-     * @return Prediction result
-     */
     @PostMapping("/predict")
     public ResponseEntity<Map<String, Object>> predictEmail(@RequestBody EmailRequest request) {
         double[] features = classifierService.textToFeatureVector(request.getEmail());
         Map<String, Object> result = classifierService.predictEmail(features);
         return ResponseEntity.ok(result);
     }
-    /**
-     * Get last training metrics
-     * @return Training metrics from the last training session
-     */
+
+    @PostMapping("/pretrained-predict")
+    public ResponseEntity<Map<String, Object>> predictPretrainedEmail(@RequestBody EmailRequest request) {
+        double[] features = classifierService.textToFeatureVector(request.getEmail());
+        Map<String, Object> result = classifierService.predictPretrainedEmail(features);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/metrics")
     public ResponseEntity<TrainingResponse.TrainingMetrics> getMetrics() {
         TrainingResponse.TrainingMetrics metrics = classifierService.getLastTrainingMetrics();
@@ -94,23 +80,40 @@ public class ClassifierController {
         return ResponseEntity.ok(metrics);
     }
 
-    /**
-     * Get current model information
-     * @return Model architecture and configuration details
-     */
+    @GetMapping("/pretrained-metrics")
+    public ResponseEntity<TrainingResponse.TrainingMetrics> getPretrainedMetrics() {
+        TrainingResponse.TrainingMetrics metrics = classifierService.getPretrainedMetrics();
+        if (metrics == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(metrics);
+    }
+
     @GetMapping("/model-info")
     public ResponseEntity<Map<String, Object>> getModelInfo() {
         Map<String, Object> info = classifierService.getModelInfo();
         return ResponseEntity.ok(info);
     }
 
-    /**
-     * Get available activation functions
-     * @return List of supported activation functions
-     */
+    @GetMapping("/pretrained-model-info")
+    public ResponseEntity<Map<String, Object>> getPretrainedModelInfo() {
+        Map<String, Object> info = classifierService.getPretrainedModelInfo();
+        return ResponseEntity.ok(info);
+    }
+
     @GetMapping("/activation-functions")
     public ResponseEntity<String[]> getActivationFunctions() {
         String[] functions = {"SIGMOID", "TANH", "RELU", "LEAKY_RELU"};
         return ResponseEntity.ok(functions);
+    }
+
+    @PostMapping("/save-pretrained")
+    public ResponseEntity<Map<String, String>> savePretrainedModel() {
+        try {
+            classifierService.savePretrainedModel();
+            return ResponseEntity.ok(Map.of("status", "success", "message", "Pretrained model saved successfully"));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("status", "error", "message", e.getMessage()));
+        }
     }
 }

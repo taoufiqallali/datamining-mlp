@@ -3,6 +3,9 @@ package m2i.datamining_mlp.service;
 import m2i.datamining_mlp.DTO.TrainingRequest;
 import m2i.datamining_mlp.DTO.TrainingResponse;
 import m2i.datamining_mlp.model.Classifier;
+import m2i.datamining_mlp.model.PretrainedModel;
+import m2i.datamining_mlp.repository.PretrainedModelRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -21,6 +24,16 @@ public class ClassifierService {
 
     /** Stores the metrics from the last training session. */
     private TrainingResponse.TrainingMetrics lastTrainingMetrics;
+
+    private final PretrainedModelRepository pretrainedModelRepository;
+
+    @Autowired
+    public ClassifierService(PretrainedModelRepository pretrainedModelRepository) {
+        this.pretrainedModelRepository = pretrainedModelRepository;
+    }
+
+
+
 
     /**
      * Trains a neural network classifier using the provided configuration and dataset.
@@ -228,7 +241,7 @@ public class ClassifierService {
         } catch (Exception e) {
             response.setStatus("error");
             response.setMessage("Training failed: " + e.getMessage());
-            e.printStackTrace(); // TODO: Replace with proper logging in production
+            e.printStackTrace();
         }
 
         return response;
@@ -279,6 +292,47 @@ public class ClassifierService {
         return result;
     }
 
+
+    public Map<String, Object> predictPretrainedEmail(double[] features) {
+        Map<String, Object> result = new HashMap<>();
+        Optional<PretrainedModel> pretrainedModelOpt = pretrainedModelRepository.findById("pretrained_model");
+        if (pretrainedModelOpt.isEmpty()) {
+            result.put("error", "No pretrained model available");
+            return result;
+        }
+
+        PretrainedModel pretrainedModel = pretrainedModelOpt.get();
+        Classifier pretrainedClassifier = pretrainedModel.toClassifier();
+
+        try {
+            if (features.length != pretrainedClassifier.getInputSize()) {
+                result.put("error", String.format("Feature vector size mismatch. Expected %d, got %d",
+                        pretrainedClassifier.getInputSize(), features.length));
+                return result;
+            }
+
+            double prediction = pretrainedClassifier.predict(features);
+            boolean isSpam = prediction > 0.5;
+            double confidence = isSpam ? prediction : (1 - prediction);
+
+            result.put("prediction", prediction);
+            result.put("isSpam", isSpam);
+            result.put("classification", isSpam ? "SPAM" : "NOT SPAM");
+            result.put("confidence", confidence);
+            result.put("modelInfo", String.format("Pretrained Network: %d layers, %s activation",
+                    pretrainedClassifier.getNumHiddenLayers(),
+                    pretrainedClassifier.getActivationFunction()));
+
+        } catch (Exception e) {
+            result.put("error", "Prediction failed: " + e.getMessage());
+        }
+
+        return result;
+    }
+
+
+
+
     /**
      * Retrieves the metrics from the last training session.
      *
@@ -286,6 +340,12 @@ public class ClassifierService {
      */
     public TrainingResponse.TrainingMetrics getLastTrainingMetrics() {
         return lastTrainingMetrics;
+    }
+
+
+    public TrainingResponse.TrainingMetrics getPretrainedMetrics() {
+        Optional<PretrainedModel> pretrainedModelOpt = pretrainedModelRepository.findById("pretrained_model");
+        return pretrainedModelOpt.map(PretrainedModel::getMetrics).orElse(null);
     }
 
     /**
@@ -311,6 +371,34 @@ public class ClassifierService {
         info.put("learningRate", currentClassifier.getLearningRate());
 
         return info;
+    }
+
+
+    public Map<String, Object> getPretrainedModelInfo() {
+        Map<String, Object> info = new HashMap<>();
+        Optional<PretrainedModel> pretrainedModelOpt = pretrainedModelRepository.findById("pretrained_model");
+        if (pretrainedModelOpt.isEmpty()) {
+            info.put("error", "No pretrained model available");
+            return info;
+        }
+
+        PretrainedModel pretrainedModel = pretrainedModelOpt.get();
+        info.put("inputSize", pretrainedModel.getInputSize());
+        info.put("hiddenLayerSizes", pretrainedModel.getHiddenSizes());
+        info.put("numHiddenLayers", pretrainedModel.getHiddenSizes().length);
+        info.put("activationFunction", pretrainedModel.getActivationFunction());
+        info.put("learningRate", pretrainedModel.getLearningRate());
+
+        return info;
+    }
+
+
+    public void savePretrainedModel() {
+        if (currentClassifier == null || lastTrainingMetrics == null) {
+            throw new IllegalStateException("No trained model or metrics available to save");
+        }
+        PretrainedModel pretrainedModel = new PretrainedModel(currentClassifier, lastTrainingMetrics);
+        pretrainedModelRepository.save(pretrainedModel);
     }
 
     /**
