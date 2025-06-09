@@ -13,7 +13,7 @@ Ce projet est une application Java Spring Boot qui implémente un **réseau de n
 
 ## ⚙ Prérequis
 
-- **Java 17** ou version ultérieure.
+- **Java 21**.
 - **Maven** (`mvn`) installé.
 - **MongoDB** en local, accessible via : mongodb://localhost:27017/
 
