@@ -182,7 +182,7 @@ public class ClassifierService {
 
                 // Record average loss for every 10th epoch or the last epoch
                 double avgLoss = totalLoss / xTrain.length;
-                if (epoch % 10 == 0 || epoch == request.getEpochs() - 1) {
+                if (epoch % 5 == 0 || epoch == request.getEpochs() - 1) {
                     epochLosses.add(new TrainingResponse.EpochLoss(epoch, avgLoss));
                 }
             }
@@ -230,6 +230,11 @@ public class ClassifierService {
 
             // Store metrics for later retrieval
             lastTrainingMetrics = metrics;
+
+            System.out.println(totalSpam);
+            System.out.println(correctSpam);
+            System.out.println(totalNotSpam);
+            System.out.println(correctNotSpam);
 
             // Set successful response
             response.setStatus("success");

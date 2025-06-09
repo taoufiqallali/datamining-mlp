@@ -11,7 +11,7 @@ import java.util.Arrays;
 @Document(collection = "pretrained_models")
 public class PretrainedModel implements Serializable {
     @Id
-    private String id; // Fixed ID for single pretrained model
+    private String id = "pretrained_model"; // Fixed ID for single pretrained model
     private double[][][] weights; // Neural network weights
     private double[][] biases; // Neural network biases
     private int inputSize;
