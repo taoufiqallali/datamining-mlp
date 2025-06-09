@@ -118,5 +118,5 @@ Ouvrez le fichier index.html dans votre navigateur : le  fichier est situee dans
 ├── spam_classifier.pretrained_models.json  
 │   → Fichier JSON contenant des modèles pré-entraînés à importer dans la base MongoDB.
 │
-├── spam_classifier.pretrained_models.zip  
+├── emails.csv
 │   → Jeu de données utilisé pour entraîner un modèle.
