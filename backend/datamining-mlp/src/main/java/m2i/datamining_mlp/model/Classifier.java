@@ -1,5 +1,6 @@
 package m2i.datamining_mlp.model;
 
+// Annotations Lombok pour générer automatiquement les getters et setters
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,69 +9,69 @@ import java.util.Random;
 @Setter
 @Getter
 public class Classifier {
-    // Network architecture
-    private int inputSize;
-    private int[] hiddenSizes;  // Array to store sizes of each hidden layer
-    private int outputSize;
-    private int numHiddenLayers;
+    // Architecture du réseau
+    private int inputSize; // Taille de la couche d'entrée
+    private int[] hiddenSizes;  // Tableau contenant la taille de chaque couche cachée
+    private int outputSize; // Taille de la couche de sortie (1 pour classification binaire)
+    private int numHiddenLayers; // Nombre de couches cachées
 
-    // Activation function enum
+    // Enumération des fonctions d’activation disponibles
     public enum ActivationFunction {
         SIGMOID, TANH, RELU, LEAKY_RELU
     }
 
-    private ActivationFunction activationFunction;
+    private ActivationFunction activationFunction; // Fonction d’activation utilisée
 
-    // Weights and biases - now arrays for multiple layers
-    private double[][][] weights;  // [layer][from][to]
-    private double[][] biases;     // [layer][neuron]
+    // Poids et biais - représentés par des tableaux pour plusieurs couches
+    private double[][][] weights;  // [couche][depuis][vers]
+    private double[][] biases;     // [couche][neurone]
 
-    // Learning rate
+    // Taux d’apprentissage
     private double learningRate;
 
-    // Random generator
+    // Générateur aléatoire
     private Random random;
 
+    // Constructeur du classificateur
     public Classifier(int inputSize, int[] hiddenSizes, double learningRate, ActivationFunction activationFunction) {
         this.inputSize = inputSize;
         this.hiddenSizes = hiddenSizes.clone();
         this.numHiddenLayers = hiddenSizes.length;
-        this.outputSize = 1; // Binary classification (spam or not)
+        this.outputSize = 1; // Classification binaire (spam ou non)
         this.learningRate = learningRate;
         this.activationFunction = activationFunction;
-        this.random = new Random(42); // Fixed seed
+        this.random = new Random(42); // Graine fixe
 
-        initializeWeights();
+        initializeWeights(); // Initialisation des poids et biais
     }
 
     /**
-     * Initialize weights and biases with small random values
+     * Initialise les poids et les biais avec de petites valeurs aléatoires
      */
     private void initializeWeights() {
-        // Total layers = hidden layers + output layer
-        int totalLayers = numHiddenLayers + 1;
+        int totalLayers = numHiddenLayers + 1; // Couches cachées + couche de sortie
         weights = new double[totalLayers][][];
         biases = new double[totalLayers][];
 
-        // Initialize weights and biases for each layer
+        // Boucle sur chaque couche pour initialiser poids et biais
         for (int layer = 0; layer < totalLayers; layer++) {
             int inputSizeForLayer, outputSizeForLayer;
 
             if (layer == 0) {
-                // First hidden layer
+                // Première couche cachée
                 inputSizeForLayer = inputSize;
                 outputSizeForLayer = hiddenSizes[0];
             } else if (layer < numHiddenLayers) {
-                // Subsequent hidden layers
+                // Couches cachées suivantes
                 inputSizeForLayer = hiddenSizes[layer - 1];
                 outputSizeForLayer = hiddenSizes[layer];
             } else {
-                // Output layer
+                // Couche de sortie
                 inputSizeForLayer = hiddenSizes[numHiddenLayers - 1];
                 outputSizeForLayer = outputSize;
             }
 
-            // Initialize weights for this layer
+            // Initialisation des poids
             weights[layer] = new double[inputSizeForLayer][outputSizeForLayer];
             for (int i = 0; i < inputSizeForLayer; i++) {
                 for (int j = 0; j < outputSizeForLayer; j++) {
@@ -78,7 +79,7 @@ public class Classifier {
                 }
             }
 
-            // Initialize biases for this layer
+            // Initialisation des biais
             biases[layer] = new double[outputSizeForLayer];
             for (int i = 0; i < outputSizeForLayer; i++) {
                 biases[layer][i] = random.nextGaussian() * 0.1;
@@ -87,7 +88,7 @@ public class Classifier {
     }
 
     /**
-     * Apply activation function
+     * Applique la fonction d’activation choisie
      */
     private double activate(double x, ActivationFunction function) {
         switch (function) {
@@ -100,12 +101,12 @@ public class Classifier {
             case LEAKY_RELU:
                 return x > 0 ? x : 0.01 * x;
             default:
-                return 1.0 / (1.0 + Math.exp(-x)); // Default to sigmoid
+                return 1.0 / (1.0 + Math.exp(-x)); // Par défaut : sigmoid
         }
     }
 
     /**
-     * Calculate derivative of activation function
+     * Calcule la dérivée de la fonction d’activation
      */
     private double activationDerivative(double x, ActivationFunction function) {
         switch (function) {
@@ -126,14 +127,14 @@ public class Classifier {
     }
 
     /**
-     * Forward propagation
-     * @param input Input features (email word frequencies)
-     * @return Prediction probability (0-1, where >0.5 means spam)
+     * Propagation avant
+     * @param input Entrée (fréquence des mots dans l'email)
+     * @return Probabilité prédite (entre 0 et 1, >0.5 = spam)
      */
     public double predict(double[] input) {
         double[] currentInput = input.clone();
 
-        // Forward through all layers
+        // Propagation à travers toutes les couches
         for (int layer = 0; layer < numHiddenLayers + 1; layer++) {
             double[] nextLayer = new double[weights[layer][0].length];
 
@@ -143,33 +144,33 @@ public class Classifier {
                     sum += currentInput[i] * weights[layer][i][j];
                 }
 
-                // Apply activation function (sigmoid for output layer, user-defined for hidden layers)
+                // Application de la fonction d’activation
                 if (layer < numHiddenLayers) {
                     nextLayer[j] = activate(sum, activationFunction);
                 } else {
-                    nextLayer[j] = activate(sum, ActivationFunction.SIGMOID); // Always sigmoid for output
+                    nextLayer[j] = activate(sum, ActivationFunction.SIGMOID); // Sigmoid pour la sortie
                 }
             }
 
             currentInput = nextLayer;
         }
 
-        return currentInput[0]; // Return the single output
+        return currentInput[0]; // Sortie unique
     }
 
     /**
-     * Train the network on one sample (single email)
-     * @param input Email features
-     * @param target True label (0=not spam, 1=spam)
+     * Entraîne le réseau sur un seul exemple
+     * @param input Caractéristiques de l’email
+     * @param target Étiquette vraie (0=non spam, 1=spam)
      */
     public void trainSample(double[] input, int target) {
-        // FORWARD PASS - store intermediate values for backprop
-        double[][] layerOutputs = new double[numHiddenLayers + 2][]; // +2 for input and output
-        double[][] layerInputs = new double[numHiddenLayers + 1][]; // +1 for hidden and output layers
+        // PROPAGATION AVANT - on stocke les valeurs intermédiaires
+        double[][] layerOutputs = new double[numHiddenLayers + 2][]; // +2 pour l’entrée et la sortie
+        double[][] layerInputs = new double[numHiddenLayers + 1][]; // +1 pour les couches cachées + sortie
 
-        layerOutputs[0] = input.clone(); // Input layer
+        layerOutputs[0] = input.clone(); // Couche d’entrée
 
-        // Forward through all layers
+        // Propagation vers l’avant
         for (int layer = 0; layer < numHiddenLayers + 1; layer++) {
             int inputSize = layerOutputs[layer].length;
             int outputSize = weights[layer][0].length;
@@ -185,7 +186,7 @@ public class Classifier {
 
                 layerInputs[layer][j] = sum;
 
-                // Apply activation function
+                // Activation
                 if (layer < numHiddenLayers) {
                     layerOutputs[layer + 1][j] = activate(sum, activationFunction);
                 } else {
@@ -194,50 +195,50 @@ public class Classifier {
             }
         }
 
-        // BACKWARD PASS - calculate gradients
+        // PROPAGATION ARRIÈRE - calcul des gradients
         double[][] deltas = new double[numHiddenLayers + 1][];
 
-        // Calculate delta for output layer
+        // Calcul de l’erreur pour la couche de sortie
         int outputLayerIndex = numHiddenLayers;
         deltas[outputLayerIndex] = new double[outputSize];
         double output = layerOutputs[outputLayerIndex + 1][0];
         double outputError = target - output;
-        deltas[outputLayerIndex][0] = outputError * output * (1 - output); // Sigmoid derivative
+        deltas[outputLayerIndex][0] = outputError * output * (1 - output); // Dérivée de sigmoid
 
-        // Calculate deltas for hidden layers (backpropagate)
+        // Backpropagation pour les couches cachées
         for (int layer = numHiddenLayers - 1; layer >= 0; layer--) {
             deltas[layer] = new double[hiddenSizes[layer]];
 
             for (int i = 0; i < hiddenSizes[layer]; i++) {
                 double error = 0.0;
 
-                // Sum errors from next layer
+                // Somme des erreurs provenant de la couche suivante
                 for (int j = 0; j < deltas[layer + 1].length; j++) {
                     error += deltas[layer + 1][j] * weights[layer + 1][i][j];
                 }
 
-                // Apply derivative of activation function
+                // Dérivée de la fonction d’activation
                 deltas[layer][i] = error * activationDerivative(layerInputs[layer][i], activationFunction);
             }
         }
 
-        // UPDATE WEIGHTS AND BIASES
+        // MISE À JOUR DES POIDS ET BIAIS
         for (int layer = 0; layer < numHiddenLayers + 1; layer++) {
-            // Update weights
+            // Mise à jour des poids
             for (int i = 0; i < weights[layer].length; i++) {
                 for (int j = 0; j < weights[layer][i].length; j++) {
                     weights[layer][i][j] += learningRate * deltas[layer][j] * layerOutputs[layer][i];
                 }
             }
 
-            // Update biases
+            // Mise à jour des biais
             for (int j = 0; j < biases[layer].length; j++) {
                 biases[layer][j] += learningRate * deltas[layer][j];
             }
         }
     }
 
-    // Getters for network parameters
+    // Getters pour les paramètres du réseau
     public int getInputSize() { return inputSize; }
     public int[] getHiddenSizes() { return hiddenSizes.clone(); }
     public int getNumHiddenLayers() { return numHiddenLayers; }

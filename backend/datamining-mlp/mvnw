@@ -1,3 +1,8 @@
+# Ce script lance Maven en utilisant une version spécifique définie pour le projet,
+# garantissant que tous les développeurs utilisent la même version de Maven.
+# Il facilite l'exécution de Maven sans l'installer globalement.
+
+
 #!/bin/sh
 # ----------------------------------------------------------------------------
 # Licensed to the Apache Software Foundation (ASF) under one

@@ -1,39 +1,44 @@
 package m2i.datamining_mlp.model;
 
-
+// Importation de la classe TrainingResponse utilisée pour stocker les métriques d'entraînement
 import m2i.datamining_mlp.DTO.TrainingResponse;
+// Importation de l'annotation @Id pour identifier l'objet dans MongoDB
 import org.springframework.data.annotation.Id;
+// Annotation pour indiquer que cette classe est un document MongoDB
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
 import java.util.Arrays;
 
+// Indique que cette classe représente un document de la collection "pretrained_models"
 @Document(collection = "pretrained_models")
 public class PretrainedModel implements Serializable {
+    // Identifiant unique fixe pour le modèle préentraîné
     @Id
-    private String id = "pretrained_model"; // Fixed ID for single pretrained model
-    private double[][][] weights; // Neural network weights
-    private double[][] biases; // Neural network biases
-    private int inputSize;
-    private int[] hiddenSizes;
-    private double learningRate;
-    private String activationFunction;
-    private TrainingResponse.TrainingMetrics metrics;
+    private String id = "pretrained_model"; // ID fixe pour un seul modèle préentraîné
+    private double[][][] weights; // Poids du réseau de neurones
+    private double[][] biases; // Biais du réseau de neurones
+    private int inputSize; // Taille de l'entrée
+    private int[] hiddenSizes; // Tailles des couches cachées
+    private double learningRate; // Taux d'apprentissage
+    private String activationFunction; // Fonction d'activation utilisée
+    private TrainingResponse.TrainingMetrics metrics; // Métriques d'entraînement associées
 
-    // Constructors
+    // Constructeur vide par défaut
     public PretrainedModel() {}
 
+    // Constructeur prenant un classificateur et ses métriques d'entraînement
     public PretrainedModel(Classifier classifier, TrainingResponse.TrainingMetrics metrics) {
-        this.weights = classifier.getWeights();
-        this.biases = classifier.getBiases();
-        this.inputSize = classifier.getInputSize();
-        this.hiddenSizes = classifier.getHiddenSizes();
-        this.learningRate = classifier.getLearningRate();
-        this.activationFunction = classifier.getActivationFunction().toString();
-        this.metrics = metrics;
+        this.weights = classifier.getWeights(); // Récupération des poids depuis le classificateur
+        this.biases = classifier.getBiases(); // Récupération des biais depuis le classificateur
+        this.inputSize = classifier.getInputSize(); // Taille d'entrée du classificateur
+        this.hiddenSizes = classifier.getHiddenSizes(); // Tailles des couches cachées
+        this.learningRate = classifier.getLearningRate(); // Taux d'apprentissage
+        this.activationFunction = classifier.getActivationFunction().toString(); // Fonction d'activation convertie en chaîne
+        this.metrics = metrics; // Enregistrement des métriques
     }
 
-    // Getters and Setters
+    // Getters et setters pour tous les champs
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -58,13 +63,12 @@ public class PretrainedModel implements Serializable {
     public TrainingResponse.TrainingMetrics getMetrics() { return metrics; }
     public void setMetrics(TrainingResponse.TrainingMetrics metrics) { this.metrics = metrics; }
 
-    // Convert to Classifier
+    // Méthode pour convertir cet objet en une instance de Classifier
     public Classifier toClassifier() {
         Classifier classifier = new Classifier(inputSize, hiddenSizes, learningRate,
-                Classifier.ActivationFunction.valueOf(activationFunction));
-        classifier.setWeights(weights);
-        classifier.setBiases(biases);
-        return classifier;
+                Classifier.ActivationFunction.valueOf(activationFunction)); // Création d'un nouveau classificateur
+        classifier.setWeights(weights); // Attribution des poids
+        classifier.setBiases(biases); // Attribution des biais
+        return classifier; // Retour du classificateur reconstruit
     }
 }
-

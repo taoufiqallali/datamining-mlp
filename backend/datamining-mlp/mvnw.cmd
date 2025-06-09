@@ -1,4 +1,7 @@
 <# : batch portion
+@REM Ce script lance Maven en utilisant une version spécifique définie pour le projet,
+@REM assurant une cohérence de la version Maven entre tous les environnements.
+@REM Permet d'exécuter Maven sans installation préalable globale.
 @REM ----------------------------------------------------------------------------
 @REM Licensed to the Apache Software Foundation (ASF) under one
 @REM or more contributor license agreements.  See the NOTICE file

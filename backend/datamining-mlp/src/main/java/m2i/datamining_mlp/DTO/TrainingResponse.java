@@ -1,32 +1,32 @@
-// TrainingResponse remains the same but with additional metrics
 package m2i.datamining_mlp.DTO;
 
 import java.util.List;
 
+// Classe représentant la réponse après l'entraînement du modèle
 public class TrainingResponse {
-    private String status;
-    private String message;
-    private TrainingMetrics metrics;
-    private List<EpochLoss> epochLosses;
+    private String status; // Statut de la réponse
+    private String message; // Message associé
+    private TrainingMetrics metrics; // Métriques d'entraînement
+    private List<EpochLoss> epochLosses; // Liste des pertes par époque
 
+    // Classe interne représentant les métriques d'entraînement
     public static class TrainingMetrics {
-        private int totalEmails;
-        private int spamEmails;
-        private int nonSpamEmails;
-        private int featureDimensions;
-        private int trainSize;
-        private int testSize;
-        private double accuracy;
-        private double spamDetectionRate;
-        private double nonSpamDetectionRate;
-        // New fields for neural network architecture
-        private int[] hiddenLayerSizes;
-        private int numHiddenLayers;
-        private String activationFunction;
+        private int totalEmails; // Nombre total d'e-mails
+        private int spamEmails; // Nombre d'e-mails spam
+        private int nonSpamEmails; // Nombre d'e-mails non-spam
+        private int featureDimensions; // Nombre de dimensions du vecteur de caractéristiques
+        private int trainSize; // Taille du jeu d'entraînement
+        private int testSize; // Taille du jeu de test
+        private double accuracy; // Précision du modèle
+        private double spamDetectionRate; // Taux de détection des spams
+        private double nonSpamDetectionRate; // Taux de détection des non-spams
+        private int[] hiddenLayerSizes; // Tailles des couches cachées
+        private int numHiddenLayers; // Nombre de couches cachées
+        private String activationFunction; // Fonction d'activation utilisée
 
         public TrainingMetrics() {}
 
-        // Existing getters and setters
+        // Accesseurs (getters/setters) 
         public int getTotalEmails() { return totalEmails; }
         public void setTotalEmails(int totalEmails) { this.totalEmails = totalEmails; }
 
@@ -54,7 +54,6 @@ public class TrainingResponse {
         public double getNonSpamDetectionRate() { return nonSpamDetectionRate; }
         public void setNonSpamDetectionRate(double nonSpamDetectionRate) { this.nonSpamDetectionRate = nonSpamDetectionRate; }
 
-        // New getters and setters
         public int[] getHiddenLayerSizes() { return hiddenLayerSizes; }
         public void setHiddenLayerSizes(int[] hiddenLayerSizes) { this.hiddenLayerSizes = hiddenLayerSizes; }
 
@@ -65,9 +64,10 @@ public class TrainingResponse {
         public void setActivationFunction(String activationFunction) { this.activationFunction = activationFunction; }
     }
 
+    // Classe interne représentant la perte à chaque époque
     public static class EpochLoss {
-        private int epoch;
-        private double loss;
+        private int epoch; // Numéro de l’époque
+        private double loss; // Valeur de la perte
 
         public EpochLoss() {}
 
@@ -83,7 +83,7 @@ public class TrainingResponse {
         public void setLoss(double loss) { this.loss = loss; }
     }
 
-    // Main class getters and setters
+    // Accesseurs principaux pour TrainingResponse
     public TrainingResponse() {}
 
     public String getStatus() { return status; }
